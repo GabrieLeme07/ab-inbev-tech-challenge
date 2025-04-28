@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Presentation.Application": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5042",
+      "environmentVariables": {
+        "RUNTIME_ENVIRONMENT_NAME": "dev",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CRED_CREDPAR_MODELO_HTTP1_PORT": "5042",
+        "CRED_CREDPAR_MODELO_HTTP2_PORT": "6042"
+      }
+    }
+  }
+}
