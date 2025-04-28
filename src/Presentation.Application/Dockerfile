@@ -1,23 +1,30 @@
-# Base Container
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
 WORKDIR /app
-EXPOSE 8090 8080
+EXPOSE 8080
 
-#Build Container
+
+# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src/temp
-COPY src ./src
-COPY ./nuget.config .
-WORKDIR /src/temp/src
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["src/Presentation.Application/Presentation.Application.csproj", "src/Presentation.Application/"]
+COPY ["src/Domain/Domain.csproj", "src/Domain/"]
+COPY ["src/Infrastructure.Data/Infrastructure.Data.csproj", "src/Infrastructure.Data/"]
+RUN dotnet restore "./src/Presentation.Application/Presentation.Application.csproj"
+COPY . .
+WORKDIR "/src/src/Presentation.Application"
+RUN dotnet build "./Presentation.Application.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-RUN dotnet restore "Presentation.Application/Presentation.Application.csproj"
-RUN dotnet build "Presentation.Application/Presentation.Application.csproj" -c Release -o /app/build
-
-#Publish/Release Container
+# This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
-RUN dotnet publish "Presentation.Application/Presentation.Application.csproj" -c Release -o /app/publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Presentation.Application.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-#Release Container
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .

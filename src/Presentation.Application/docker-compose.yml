@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  api:
+    build:
+      context: ../..
+      dockerfile: src/Presentation.Application/Dockerfile
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=AbInbevChallenge;User Id=sa;Password=!Passw0rd;TrustServerCertificate=True;"
+      Jwt__Issuer: "YourCompanyIssuer"
+      Jwt__Audience: "YourCompanyAudience"
+      Jwt__Secret: "aVeryLongSuperSecretKeyHere_ChangeThis"
+      Jwt__ExpirationHours: "2"
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+    driver: local
