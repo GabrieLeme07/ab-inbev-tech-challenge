@@ -74,7 +74,7 @@ docker-compose logs -f api
 Para aplicar migrações e criar o banco de dados:
 
 ```bash
-cd src/EmployeeManager.Infrastructure.Data
+cd src/Infrastructure.Data
 dotnet ef database update --context ApplicationDbContext
 ```
 
